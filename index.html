@@ -135,8 +135,8 @@ button{
 }
 .stamp{border:1px solid rgba(232,228,218,.32);padding:8px 11px;min-width:186px;background:rgba(13,13,13,.45);flex:none}
 .stamp .bars{
-  height:13px;margin-bottom:6px;opacity:.75;
-  background:repeating-linear-gradient(90deg,var(--paper) 0 1px,transparent 1px 3px,var(--paper) 3px 5px,transparent 5px 8px);
+  height:13px;margin-bottom:6px;opacity:.8;
+  background-repeat:repeat-x;background-size:auto 100%;
 }
 .stamp .id{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.14em}
 .stamp .misc{
@@ -148,7 +148,7 @@ button{
 .hero{display:flex;flex-direction:column;min-width:0}
 .sprocket{
   height:13px;flex:none;
-  background:repeating-linear-gradient(90deg,transparent 0 7px,rgba(232,228,218,.72) 7px 19px,transparent 19px 26px);
+  background-repeat:repeat-x;background-size:auto 100%;
 }
 .win{
   position:relative;flex:1;overflow:hidden;background:#080808;
@@ -350,6 +350,45 @@ const $ = id => document.getElementById(id);
   }
   g.putImageData(d,0,0);
   $('grain').style.backgroundImage=`url(${c.toDataURL()})`;
+})();
+
+/* barcode + sprocket holes.
+   html2canvas cannot render repeating-linear-gradient, so both patterns are
+   baked into real images. */
+(function(){
+  /* barcode strip — irregular bar widths, tiled horizontally */
+  const bc=document.createElement('canvas');
+  bc.width=140; bc.height=13;
+  const b=bc.getContext('2d');
+  b.fillStyle='#e8e4da';
+  let x=0;
+  while(x<bc.width){
+    const w=1+Math.floor(Math.random()*3);
+    const gap=1+Math.floor(Math.random()*3);
+    if(x+w<=bc.width) b.fillRect(x,0,w,bc.height);
+    x+=w+gap;
+  }
+  document.querySelectorAll('.stamp .bars').forEach(el=>{
+    el.style.backgroundImage=`url(${bc.toDataURL()})`;
+  });
+
+  /* sprocket holes — 26px tile, 12px hole */
+  const sp=document.createElement('canvas');
+  sp.width=26; sp.height=13;
+  const s=sp.getContext('2d');
+  s.fillStyle='rgba(232,228,218,.72)';
+  const r=2, x0=7, w=12, h=13;
+  s.beginPath();
+  s.moveTo(x0+r,0);
+  s.lineTo(x0+w-r,0); s.quadraticCurveTo(x0+w,0,x0+w,r);
+  s.lineTo(x0+w,h-r); s.quadraticCurveTo(x0+w,h,x0+w-r,h);
+  s.lineTo(x0+r,h);   s.quadraticCurveTo(x0,h,x0,h-r);
+  s.lineTo(x0,r);     s.quadraticCurveTo(x0,0,x0+r,0);
+  s.closePath(); s.fill();
+  const spUrl=`url(${sp.toDataURL()})`;
+  document.querySelectorAll('.sprocket').forEach(el=>{
+    el.style.backgroundImage=spUrl;
+  });
 })();
 
 /* text bindings */
